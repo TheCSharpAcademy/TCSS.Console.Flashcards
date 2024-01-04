@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "TCSS.Console.Flashcards": {
+      "commandName": "Project",
+      "workingDirectory": "C:\\Pablo\\TCSS.Console.Flashcards\\"
+    }
+  }
+}
