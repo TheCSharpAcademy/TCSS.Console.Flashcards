@@ -52,18 +52,4 @@ public class DataAccess
             Console.WriteLine($"There was a problem creating the tables: {ex.Message}");
         }
     }
-
-    //internal void InsertRecord(Stack stack)
-    //{
-    //    using (var connection = new SqlConnection(ConnectionString))
-    //    {
-    //        connection.Open();
-
-    //        string insertQuery = @"
-    //        INSERT INTO Stacks (Name)
-    //        VALUES (@Name)";
-
-    //        connection.Execute(insertQuery, new { stack.Name });
-    //    }
-    //}
 }
