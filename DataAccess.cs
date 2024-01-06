@@ -52,4 +52,58 @@ public class DataAccess
             Console.WriteLine($"There was a problem creating the tables: {ex.Message}");
         }
     }
+
+    internal void InsertStack(Stack stack)
+    {
+        try
+        {
+            using (var connection = new SqlConnection(ConnectionString))
+            {
+                connection.Open();
+
+                string insertQuery = @"
+            INSERT INTO Stacks (Name) VALUES (@Name)";
+
+                connection.Execute(insertQuery, new { stack.Name });
+            }
+        } 
+        catch (Exception ex)
+        {
+            Console.WriteLine($"There was a problem inserting the stack: {ex.Message}");
+        }
+    }
+
+    internal IEnumerable<Stack> GetAllStacks()
+    {
+        using (var connection = new SqlConnection(ConnectionString))
+        {
+            connection.Open();
+
+            string selectQuery = "SELECT * FROM stacks";
+
+            var records = connection.Query<Stack>(selectQuery);
+
+            return records;
+        }
+    }
+
+    internal void InsertFlashcard(Flashcard flashcard)
+    {
+        try
+        {
+            using (var connection = new SqlConnection(ConnectionString))
+            {
+                connection.Open();
+
+                string insertQuery = @"
+            INSERT INTO Flashcards (Question, Answer, StackId) VALUES (@Question, @Answer, @StackId)";
+
+                connection.Execute(insertQuery, new { flashcard.Question, flashcard.Answer, flashcard.StackId });
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"There was a problem inserting the flashcard: {ex.Message}");
+        }
+    }
 }

@@ -1,10 +1,14 @@
-﻿using Spectre.Console;
+﻿using Microsoft.SqlServer.Server;
+using Spectre.Console;
+using TCSS.Console.Flashcards.Models;
 using static TCSS.Console.Flashcards.Enums;
 
 namespace TCSS.Console.Flashcards;
 
 internal class UserInterface
 {
+    DataAccess dataAccess = new();
+
     internal static void MainMenu()
     {
         var isMenuRunning = true;
@@ -56,7 +60,7 @@ internal class UserInterface
             switch (usersChoice)
             {
                 case StackChoices.ViewStacks:
-                    ViewStacks();
+                    ChooseStack();
                     break;
                 case StackChoices.AddStack:
                     AddStack();
@@ -86,12 +90,32 @@ internal class UserInterface
 
     private static void AddStack()
     {
-        throw new NotImplementedException();
+        Stack stack = new();
+
+        stack.Name = AnsiConsole.Ask<string>("Insert Stack's Name.");
+
+        while(string.IsNullOrEmpty(stack.Name))
+        {
+            stack.Name = AnsiConsole.Ask<string>("Stack's name can't be empty. Try again.");
+        }
+
+        var dataAccess = new DataAccess();
+        dataAccess.InsertStack(stack);
     }
 
-    private static void ViewStacks()
+    private static int ChooseStack()
     {
-        throw new NotImplementedException();
+        var dataAccess = new DataAccess();
+        var stacks = dataAccess.GetAllStacks();
+
+        var stacksArray = stacks.Select(x => x.Name).ToArray();
+        var option = AnsiConsole.Prompt(new SelectionPrompt<string>()
+            .Title("Choose Product")
+            .AddChoices(stacksArray));
+
+        var stackId = stacks.Single(x => x.Name == option).Id;
+
+        return stackId;
     }
 
     internal static void FlashcardsMenu()
@@ -144,7 +168,25 @@ internal class UserInterface
 
     private static void AddFlashcard()
     {
-        throw new NotImplementedException();
+        Flashcard flashcard = new();
+
+        flashcard.StackId = ChooseStack();
+        flashcard.Question = AnsiConsole.Ask<string>("Insert Question.");
+
+        while (string.IsNullOrEmpty(flashcard.Question))
+        {
+            flashcard.Question = AnsiConsole.Ask<string>("Question can't be empty. Try again.");
+        }
+
+        flashcard.Answer = AnsiConsole.Ask<string>("Insert Answer.");
+
+        while (string.IsNullOrEmpty(flashcard.Answer))
+        {
+            flashcard.Answer = AnsiConsole.Ask<string>("Answer can't be empty. Try again.");
+        }
+
+        var dataAccess = new DataAccess();
+        dataAccess.InsertFlashcard(flashcard);
     }
 
     private static void ViewFlashcards()

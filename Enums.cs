@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace TCSS.Console.Flashcards;
+﻿namespace TCSS.Console.Flashcards;
 
 internal class Enums
 {
