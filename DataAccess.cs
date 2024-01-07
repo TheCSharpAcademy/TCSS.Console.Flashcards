@@ -1,6 +1,7 @@
 ﻿using Dapper;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
+using System.Linq.Expressions;
 using TCSS.Console.Flashcards.Models;
 
 public class DataAccess
@@ -75,15 +76,23 @@ public class DataAccess
 
     internal IEnumerable<Stack> GetAllStacks()
     {
-        using (var connection = new SqlConnection(ConnectionString))
+        try
         {
-            connection.Open();
+            using (var connection = new SqlConnection(ConnectionString))
+            {
+                connection.Open();
 
-            string selectQuery = "SELECT * FROM stacks";
+                string selectQuery = "SELECT * FROM stacks";
 
-            var records = connection.Query<Stack>(selectQuery);
+                var records = connection.Query<Stack>(selectQuery);
 
-            return records;
+                return records;
+            }
+        } 
+        catch (Exception ex)
+        {
+            Console.WriteLine($"There was a problem retrieving stacks: {ex.Message}");
+            return new List<Stack>();   
         }
     }
 

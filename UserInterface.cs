@@ -1,5 +1,4 @@
-﻿using Microsoft.SqlServer.Server;
-using Spectre.Console;
+﻿using Spectre.Console;
 using TCSS.Console.Flashcards.Models;
 using static TCSS.Console.Flashcards.Enums;
 
@@ -7,8 +6,6 @@ namespace TCSS.Console.Flashcards;
 
 internal class UserInterface
 {
-    DataAccess dataAccess = new();
-
     internal static void MainMenu()
     {
         var isMenuRunning = true;
@@ -60,7 +57,7 @@ internal class UserInterface
             switch (usersChoice)
             {
                 case StackChoices.ViewStacks:
-                    ChooseStack();
+                    ViewStacks();
                     break;
                 case StackChoices.AddStack:
                     AddStack();
@@ -94,13 +91,18 @@ internal class UserInterface
 
         stack.Name = AnsiConsole.Ask<string>("Insert Stack's Name.");
 
-        while(string.IsNullOrEmpty(stack.Name))
+        while (string.IsNullOrEmpty(stack.Name))
         {
             stack.Name = AnsiConsole.Ask<string>("Stack's name can't be empty. Try again.");
         }
 
         var dataAccess = new DataAccess();
         dataAccess.InsertStack(stack);
+    }
+
+    private static void ViewStacks()
+    {
+        throw new NotImplementedException();
     }
 
     private static int ChooseStack()
