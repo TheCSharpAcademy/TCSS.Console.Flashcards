@@ -1,7 +1,6 @@
 ﻿using Dapper;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
-using System.Linq.Expressions;
 using TCSS.Console.Flashcards.Models;
 
 public class DataAccess
@@ -67,7 +66,7 @@ public class DataAccess
 
                 connection.Execute(insertQuery, new { stack.Name });
             }
-        } 
+        }
         catch (Exception ex)
         {
             Console.WriteLine($"There was a problem inserting the stack: {ex.Message}");
@@ -88,11 +87,11 @@ public class DataAccess
 
                 return records;
             }
-        } 
+        }
         catch (Exception ex)
         {
             Console.WriteLine($"There was a problem retrieving stacks: {ex.Message}");
-            return new List<Stack>();   
+            return new List<Stack>();
         }
     }
 
@@ -113,6 +112,55 @@ public class DataAccess
         catch (Exception ex)
         {
             Console.WriteLine($"There was a problem inserting the flashcard: {ex.Message}");
+        }
+    }
+
+    internal void BulkInsertRecords(List<Stack> stacks, List<Flashcard> flashcards)
+    {
+        SqlTransaction transaction = null; // Declare the transaction variable outside the try block
+        try
+        {
+            using (var connection = new SqlConnection(ConnectionString))
+            {
+                connection.Open();
+
+                transaction = connection.BeginTransaction();
+
+                connection.Execute("INSERT INTO Stacks (Name) VALUES (@Name)", stacks, transaction: transaction);
+                connection.Execute("INSERT INTO Flashcards (Question, Answer, StackId) VALUES (@Question, @Answer, @StackId)", flashcards, transaction: transaction);
+
+                transaction.Commit(); // Commit the transaction if everything is successful
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"There was a problem bulk inserting records: {ex.Message}");
+
+            if (transaction != null)
+            {
+                transaction.Rollback(); // Rollback the transaction if an exception occurs
+            }
+        }
+    }
+
+    internal void DeleteTables()
+    {
+        try
+        {
+            using (var connection = new SqlConnection(ConnectionString))
+            {
+                connection.Open();
+
+                string dropFlashcardsTableSql = @"DROP TABLE Flashcards";
+                connection.Execute(dropFlashcardsTableSql);
+
+                string dropStacksTableSql = @"DROP TABLE Stacks";
+                connection.Execute(dropStacksTableSql);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"There was a problem deleting tables: {ex.Message}");
         }
     }
 }
