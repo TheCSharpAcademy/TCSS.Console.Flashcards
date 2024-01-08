@@ -53,6 +53,31 @@ public class DataAccess
         }
     }
 
+    internal List<Flashcard> GetFlashcards(int stackId)
+    {
+        try
+        {
+            using (var connection = new SqlConnection(ConnectionString))
+            {
+                connection.Open();
+
+                string selectQuery = "SELECT * FROM flashcards WHERE StackId = @StackId";
+
+                var records = connection
+                    .Query<Flashcard>(selectQuery, new { StackId = stackId })
+                    .ToList();
+
+                return records;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"There was a problem retrieving flashcards: {ex.Message}");
+            return new List<Flashcard>();
+        }
+    }
+
+
     internal void InsertStack(Stack stack)
     {
         try
@@ -115,9 +140,49 @@ public class DataAccess
         }
     }
 
+    internal void DeleteFlashcard(int id)
+    {
+        try
+        {
+            using (var connection = new SqlConnection(ConnectionString))
+            {
+                connection.Open();
+
+                string deleteQuery = "DELETE FROM flashcards WHERE Id = @Id";
+
+                int rowsAffected = connection.Execute(deleteQuery, new { Id = id });
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"There was a problem deleting the flashcard: {ex.Message}");
+
+        }
+    }
+
+    internal void DeleteStack(int id)
+    {
+        try
+        {
+            using (var connection = new SqlConnection(ConnectionString))
+            {
+                connection.Open();
+
+                string deleteQuery = "DELETE FROM stack WHERE Id = @Id";
+
+                int rowsAffected = connection.Execute(deleteQuery, new { Id = id });
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"There was a problem deleting the stack: {ex.Message}");
+
+        }
+    }
+
     internal void BulkInsertRecords(List<Stack> stacks, List<Flashcard> flashcards)
     {
-        SqlTransaction transaction = null; // Declare the transaction variable outside the try block
+        SqlTransaction transaction = null;
         try
         {
             using (var connection = new SqlConnection(ConnectionString))
@@ -129,7 +194,7 @@ public class DataAccess
                 connection.Execute("INSERT INTO Stacks (Name) VALUES (@Name)", stacks, transaction: transaction);
                 connection.Execute("INSERT INTO Flashcards (Question, Answer, StackId) VALUES (@Question, @Answer, @StackId)", flashcards, transaction: transaction);
 
-                transaction.Commit(); // Commit the transaction if everything is successful
+                transaction.Commit();
             }
         }
         catch (Exception ex)
@@ -138,7 +203,7 @@ public class DataAccess
 
             if (transaction != null)
             {
-                transaction.Rollback(); // Rollback the transaction if an exception occurs
+                transaction.Rollback();
             }
         }
     }

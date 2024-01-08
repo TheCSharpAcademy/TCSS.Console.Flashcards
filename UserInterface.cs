@@ -82,7 +82,13 @@ internal class UserInterface
 
     private static void DeleteStack()
     {
-        throw new NotImplementedException();
+        var id = ChooseStack("Choose stack to delete");
+
+        if (!AnsiConsole.Confirm("Are you sure?"))
+            return;
+
+        var dataAccess = new DataAccess();
+        dataAccess.DeleteStack(id);
     }
 
     private static void AddStack()
@@ -105,19 +111,34 @@ internal class UserInterface
         throw new NotImplementedException();
     }
 
-    private static int ChooseStack()
+    private static int ChooseStack(string message)
     {
         var dataAccess = new DataAccess();
         var stacks = dataAccess.GetAllStacks();
 
         var stacksArray = stacks.Select(x => x.Name).ToArray();
         var option = AnsiConsole.Prompt(new SelectionPrompt<string>()
-            .Title("Choose Product")
+            .Title(message)
             .AddChoices(stacksArray));
 
         var stackId = stacks.Single(x => x.Name == option).Id;
 
         return stackId;
+    }
+
+    private static int ChooseFlashcard(string message, int stackId)
+    {
+        var dataAccess = new DataAccess();
+        var flashcards = dataAccess.GetFlashcards(stackId);
+
+        var flashcardsArray = flashcards.Select(x => x.Question).ToArray();
+        var option = AnsiConsole.Prompt(new SelectionPrompt<string>()
+            .Title(message)
+            .AddChoices(flashcardsArray));
+
+        var flashcardId = flashcards.Single(x => x.Question == option).Id;
+
+        return flashcardId;
     }
 
     internal static void FlashcardsMenu()
@@ -165,14 +186,21 @@ internal class UserInterface
 
     private static void DeleteFlashcard()
     {
-        throw new NotImplementedException();
+        var stackId = ChooseStack("Where's the flashcard you want to delete?");
+        var flashcard = ChooseFlashcard("Choose flashcard to delete", stackId);
+
+        if (!AnsiConsole.Confirm("Are you sure?"))
+            return;
+
+        var dataAccess = new DataAccess();
+        dataAccess.DeleteFlashcard(flashcard);
     }
 
     private static void AddFlashcard()
     {
         Flashcard flashcard = new();
 
-        flashcard.StackId = ChooseStack();
+        flashcard.StackId = ChooseStack("Choose a stack for the new flashcard");
         flashcard.Question = AnsiConsole.Ask<string>("Insert Question.");
 
         while (string.IsNullOrEmpty(flashcard.Question))
