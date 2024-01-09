@@ -77,7 +77,13 @@ internal class UserInterface
 
     private static void UpdateStack()
     {
-        throw new NotImplementedException();
+        var stack = new Stack();
+
+        stack.Id = ChooseStack("Choose stack to update");
+        stack.Name = AnsiConsole.Ask<string>("Insert Stack's Name.");
+
+        var dataAccess = new DataAccess();
+        dataAccess.UpdateStack(stack);
     }
 
     private static void DeleteStack()
@@ -181,7 +187,32 @@ internal class UserInterface
 
     private static void UpdateFlashcard()
     {
-        throw new NotImplementedException();
+        var stackId = ChooseStack("Choose stack where flashcard is:");
+        var flashcardId = ChooseFlashcard("Choose flashcard to update", stackId);
+
+        var propertiesToUpdate = new Dictionary<string, object>();
+
+        if (AnsiConsole.Confirm("Would you like to update question?"))
+        {
+            var question = GetQuestion();
+            propertiesToUpdate.Add("Question", question);
+        }
+
+        if (AnsiConsole.Confirm("Would you like to update answer?"))
+        {
+            var answer = GetAnswer();
+            propertiesToUpdate.Add("Answer", answer);
+        }
+
+        if (AnsiConsole.Confirm("Would you like to update stack?"))
+        {
+            var stack = ChooseStack("Choose new stack for flashcard");
+
+            propertiesToUpdate.Add("StackId", stack);
+        }
+
+        var dataAccess = new DataAccess();
+        dataAccess.UpdateFlashcard(flashcardId, propertiesToUpdate);
     }
 
     private static void DeleteFlashcard()
@@ -201,19 +232,8 @@ internal class UserInterface
         Flashcard flashcard = new();
 
         flashcard.StackId = ChooseStack("Choose a stack for the new flashcard");
-        flashcard.Question = AnsiConsole.Ask<string>("Insert Question.");
-
-        while (string.IsNullOrEmpty(flashcard.Question))
-        {
-            flashcard.Question = AnsiConsole.Ask<string>("Question can't be empty. Try again.");
-        }
-
-        flashcard.Answer = AnsiConsole.Ask<string>("Insert Answer.");
-
-        while (string.IsNullOrEmpty(flashcard.Answer))
-        {
-            flashcard.Answer = AnsiConsole.Ask<string>("Answer can't be empty. Try again.");
-        }
+        flashcard.Question = GetQuestion();
+        flashcard.Answer = GetAnswer();
 
         var dataAccess = new DataAccess();
         dataAccess.InsertFlashcard(flashcard);
@@ -222,5 +242,29 @@ internal class UserInterface
     private static void ViewFlashcards()
     {
         throw new NotImplementedException();
+    }
+
+    private static string GetQuestion()
+    {
+        var question = AnsiConsole.Ask<string>("Insert Question.");
+
+        while (string.IsNullOrEmpty(question))
+        {
+            question = AnsiConsole.Ask<string>("Question can't be empty. Try again.");
+        }
+
+        return question;
+    }
+
+    private static string GetAnswer()
+    {
+        var answer = AnsiConsole.Ask<string>("Insert answer.");
+
+        while (string.IsNullOrEmpty(answer))
+        {
+            answer = AnsiConsole.Ask<string>("Answer can't be empty. Try again.");
+        }
+
+        return answer;
     }
 }

@@ -77,7 +77,6 @@ public class DataAccess
         }
     }
 
-
     internal void InsertStack(Stack stack)
     {
         try
@@ -205,6 +204,45 @@ public class DataAccess
             {
                 transaction.Rollback();
             }
+        }
+    }
+
+    internal void UpdateStack(Stack stack)
+    {
+        using (var connection = new SqlConnection(ConnectionString))
+        {
+            connection.Open();
+
+            string updateQuery = @"
+        UPDATE stacks
+        SET Name = @Name
+        WHERE Id = @Id";
+
+            connection.Execute(updateQuery, new { stack.Name, stack.Id });
+        }
+    }
+
+    internal void UpdateFlashcard(int flashcardId, Dictionary<string, object> propertiesToUpdate)
+    {
+        using (var connection = new SqlConnection(ConnectionString))
+        {
+            connection.Open();
+
+            string updateQuery = "UPDATE flashcards SET ";
+            var parameters = new DynamicParameters();
+
+            foreach (var kvp in propertiesToUpdate)
+            {
+                updateQuery += $"{kvp.Key} = @{kvp.Key}, ";
+                parameters.Add(kvp.Key, kvp.Value);
+            }
+
+            updateQuery = updateQuery.TrimEnd(',', ' ');
+
+            updateQuery += " WHERE Id = @Id";
+            parameters.Add("Id", flashcardId);
+
+            connection.Execute(updateQuery, parameters);
         }
     }
 
