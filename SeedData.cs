@@ -17,7 +17,7 @@ internal static class SeedData
 
         List<Flashcard> flashcards = new()
         {
-            new Flashcard { StackId = 1, Question = "Oui", Answer = "Hi" },
+            new Flashcard { StackId = 1, Question = "Oui", Answer = "Yes" },
             new Flashcard { StackId = 2, Question = "Ciao", Answer = "Hello" },
             new Flashcard { StackId = 3, Question = "Ja", Answer = "Yes" },
             new Flashcard { StackId = 4, Question = "Nein", Answer = "No" },

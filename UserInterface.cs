@@ -1,4 +1,5 @@
 ﻿using Spectre.Console;
+using System.Runtime.InteropServices;
 using TCSS.Console.Flashcards.Models;
 using static TCSS.Console.Flashcards.Enums;
 
@@ -18,6 +19,8 @@ internal class UserInterface
                     .AddChoices(
                        MainMenuChoices.ManageStacks,
                        MainMenuChoices.ManageFlashcards,
+                       MainMenuChoices.StudySession,
+                       MainMenuChoices.StudyHistory,
                        MainMenuChoices.Quit)
                     );
 
@@ -29,6 +32,9 @@ internal class UserInterface
                 case MainMenuChoices.ManageFlashcards:
                     FlashcardsMenu();
                     break;
+                case MainMenuChoices.StudySession:
+                    StudySession();
+                    break;
                 case MainMenuChoices.Quit:
                     System.Console.WriteLine("Goodbye");
                     isMenuRunning = false;
@@ -37,8 +43,46 @@ internal class UserInterface
         }
     }
 
+    internal static void StudySession()
+    {
+        var id = ChooseStack("Choose stack to study");
+
+        var dataAccess = new DataAccess();
+        var flashcards = dataAccess.GetFlashcards(id);
+
+        var studySession = new StudySession();
+        studySession.Questions = flashcards.Count();
+        studySession.StackId = id;
+
+        var correctAnswers = 0;
+        var timeStart = DateTime.Now;
+
+        foreach (var flashcard in flashcards) 
+        {
+            var answer = AnsiConsole.Ask<string>($"{flashcard.Question}: ");
+            while (string.IsNullOrEmpty(answer))
+                answer = AnsiConsole.Ask<string>($"Answer can't be empty. {flashcard.Question}: ");
+
+            if (string.Equals(answer.Trim(), flashcard.Answer, StringComparison.OrdinalIgnoreCase))
+            {
+                correctAnswers++;
+                System.Console.WriteLine($"Correct!\n");
+            } 
+            else
+            {
+                System.Console.WriteLine($"Wrong, the answer is {flashcard.Answer}\n");
+            }
+                
+        }
+
+        System.Console.WriteLine($"You've got {correctAnswers} out of {flashcards.Count()}!");
+        studySession.Time = DateTime.Now - timeStart;
+
+        dataAccess.InsertStudySession(studySession);
+    }
     internal static void StacksMenu()
     {
+        System.Console.Clear();
         var isMenuRunning = true;
 
         while (isMenuRunning)
