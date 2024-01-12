@@ -1,7 +1,9 @@
 ﻿using Dapper;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
+using System.Data;
 using TCSS.Console.Flashcards.Models;
+using TCSS.Console.Flashcards.Models.DTOs;
 
 public class DataAccess
 {
@@ -51,6 +53,7 @@ public class DataAccess
                     CREATE TABLE StudySessions (
                         Id int IDENTITY(1,1) NOT NULL PRIMARY KEY,
                         Questions int NOT NULL,
+                        Date DateTime NOT NULL, 
                         CorrectAnswers int NOT NULL,
                         Percentage AS (CorrectAnswers * 100) / Questions PERSISTED,
                         Time TIME NOT NULL,
@@ -163,9 +166,9 @@ public class DataAccess
                 connection.Open();
 
                 string insertQuery = @"
-            INSERT INTO StudySessions (Questions, CorrectAnswers, StackId, Time) VALUES (@Questions, @Answer, @StackId, @Time)";
+            INSERT INTO StudySessions (Questions, CorrectAnswers, StackId, Time, Date) VALUES (@Questions, @CorrectAnswers, @StackId, @Time, @Date)";
 
-                connection.Execute(insertQuery, new { session.Questions, session.CorrectAnswers, session.StackId, session.Time});
+                connection.Execute(insertQuery, new { session.Questions, session.CorrectAnswers, session.StackId, session.Time, session.Date });
             }
         }
         catch (Exception ex)
@@ -278,6 +281,30 @@ public class DataAccess
             parameters.Add("Id", flashcardId);
 
             connection.Execute(updateQuery, parameters);
+        }
+    }
+
+    internal List<StudySessionDTO> GetStudySessionData()
+    {
+        using (var connection = new SqlConnection(ConnectionString))
+        {
+            connection.Open();
+
+            string sql = @"
+        SELECT
+            s.Name as StackName,
+            ss.Date,
+            ss.Questions,
+            ss.CorrectAnswers,
+            ss.Percentage,
+            ss.Time
+        FROM
+            StudySessions ss
+        INNER JOIN
+            Stacks s ON ss.StackId = s.Id;
+    ";
+
+            return connection.Query<StudySessionDTO>(sql).ToList();
         }
     }
 

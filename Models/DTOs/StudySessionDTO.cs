@@ -1,9 +1,8 @@
-﻿namespace TCSS.Console.Flashcards.Models;
+﻿namespace TCSS.Console.Flashcards.Models.DTOs;
 
-internal class StudySession
+internal class StudySessionDTO
 {
-    public int Id { get; set; }
-    public int StackId { get; set; }
+    public string StackName { get; set; }
     public DateTime Date { get; set; }
     public int Questions { get; set; }
     public int CorrectAnswers { get; set; }

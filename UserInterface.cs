@@ -1,5 +1,4 @@
 ﻿using Spectre.Console;
-using System.Runtime.InteropServices;
 using TCSS.Console.Flashcards.Models;
 using static TCSS.Console.Flashcards.Enums;
 
@@ -35,12 +34,36 @@ internal class UserInterface
                 case MainMenuChoices.StudySession:
                     StudySession();
                     break;
+                case MainMenuChoices.StudyHistory:
+                    ViewStudyHistory();
+                    break;
                 case MainMenuChoices.Quit:
                     System.Console.WriteLine("Goodbye");
                     isMenuRunning = false;
                     break;
             }
         }
+    }
+
+    internal static void ViewStudyHistory()
+    {
+        var dataAccess = new DataAccess();
+        var sessions = dataAccess.GetStudySessionData();
+
+        var table = new Table();
+
+        table.AddColumn("Date");
+        table.AddColumn("Stack");
+        table.AddColumn("Result");
+        table.AddColumn("Percentage");
+        table.AddColumn("Duration");
+
+        foreach (var session in sessions)
+        {
+            table.AddRow(session.Date.ToShortDateString(), session.StackName, $"{session.CorrectAnswers} out of {session.Questions}", $"{session.Percentage}%", session.Time.ToString());
+        }
+
+        AnsiConsole.Write(table);
     }
 
     internal static void StudySession()
@@ -53,11 +76,11 @@ internal class UserInterface
         var studySession = new StudySession();
         studySession.Questions = flashcards.Count();
         studySession.StackId = id;
+        studySession.Date = DateTime.Now;
 
         var correctAnswers = 0;
-        var timeStart = DateTime.Now;
 
-        foreach (var flashcard in flashcards) 
+        foreach (var flashcard in flashcards)
         {
             var answer = AnsiConsole.Ask<string>($"{flashcard.Question}: ");
             while (string.IsNullOrEmpty(answer))
@@ -67,16 +90,16 @@ internal class UserInterface
             {
                 correctAnswers++;
                 System.Console.WriteLine($"Correct!\n");
-            } 
+            }
             else
             {
                 System.Console.WriteLine($"Wrong, the answer is {flashcard.Answer}\n");
             }
-                
+
         }
 
         System.Console.WriteLine($"You've got {correctAnswers} out of {flashcards.Count()}!");
-        studySession.Time = DateTime.Now - timeStart;
+        studySession.Time = DateTime.Now - studySession.Date;
 
         dataAccess.InsertStudySession(studySession);
     }
